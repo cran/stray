@@ -11,6 +11,9 @@
 #' @param normalize Method to normalize the columns of the data. This prevents variables with large variances
 #'  having disproportional influence on Euclidean distances. Two options are available "standardize" or "unitize".
 #'  Default is set to "unitize"
+#' @param p Proportion of possible candidates for outliers. This defines the starting point for the
+#' bottom up searching algorithm. Default is set to 0.5.
+#' @param tn Sample size to calculate an emperical threshold. Default is set to 50.
 #' @return The indexes of the observations determined to be outliers.
 #' @export
 #' @import stats
@@ -35,7 +38,7 @@
 #'
 find_HDoutliers <- function(data, alpha = 0.01, k = 10,
                             knnsearchtype = "brute",
-                            normalize = "unitize") {
+                            normalize = "unitize", p = 0.5, tn =50) {
   data <- as.matrix(data)
   r <- nrow(data)
   data[is.infinite(data)] <- NA
@@ -61,7 +64,7 @@ find_HDoutliers <- function(data, alpha = 0.01, k = 10,
   }
 
   data <- apply(as.matrix(naomit_data), 2, normalize)
-  out <- use_KNN(data, alpha, k = k, knnsearchtype = knnsearchtype)
+  out <- use_KNN(data, alpha, k = k, knnsearchtype = knnsearchtype, p = p, tn=tn)
   outliers <- tag[out$outliers]
   type <- as.factor(ifelse(1:r %in% outliers,
     "outlier", "typical"
@@ -78,11 +81,13 @@ find_HDoutliers <- function(data, alpha = 0.01, k = 10,
 #'  distances between exemplars.
 #' @param k Number of neighbours considered.
 #' @param knnsearchtype A character vector indicating the search type for k- nearest-neighbors.
-#' @return The indexes of the observations determined to be outliers and the outlying scores
+#' @param p Proportion of possible candidates for outliers. This defines the starting point for the
+#' bottom up searching algorithm.
+#' @param tn Sample size to calculate an emperical threshold. Default is set to 50.
+#' @return The indexes of the observations determined to be outliers and the outlying scores.
 #' @export
 #' @importFrom FNN knn.dist
-use_KNN <- function(data, alpha = 0.01, k = 10,
-                    knnsearchtype = c("kd_tree", "brute")) {
+use_KNN <- function(data, alpha, k, knnsearchtype, p, tn) {
 
   # k <- ceiling(length(exemplars) / 20)
   if (k == 1) {
@@ -95,6 +100,6 @@ use_KNN <- function(data, alpha = 0.01, k = 10,
     d <- d_knn[cbind(1:nrow(d_knn), max_diff)]
   }
 
-  out_index <- find_theshold(d, alpha = 0.05, outtail = "max")
+  out_index <- find_threshold(d, alpha = alpha, outtail = "max", p =p, tn = tn)
   return(list(outliers = out_index, out_scores = d))
 }

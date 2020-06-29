@@ -4,8 +4,15 @@
 \alias{find_HDoutliers}
 \title{Detect Anomalies in High Dimensional Data.}
 \usage{
-find_HDoutliers(data, alpha = 0.01, k = 10, knnsearchtype = "brute",
-  normalize = "unitize")
+find_HDoutliers(
+  data,
+  alpha = 0.01,
+  k = 10,
+  knnsearchtype = "brute",
+  normalize = "unitize",
+  p = 0.5,
+  tn = 50
+)
 }
 \arguments{
 \item{data}{A vector, matrix, or data frame consisting of numerical variables.}
@@ -21,6 +28,11 @@ distances between exemplars.}
 \item{normalize}{Method to normalize the columns of the data. This prevents variables with large variances
 having disproportional influence on Euclidean distances. Two options are available "standardize" or "unitize".
 Default is set to "unitize"}
+
+\item{p}{Proportion of possible candidates for outliers. This defines the starting point for the
+bottom up searching algorithm. Default is set to 0.5.}
+
+\item{tn}{Sample size to calculate an emperical threshold. Default is set to 50.}
 }
 \value{
 The indexes of the observations determined to be outliers.
